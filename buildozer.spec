@@ -6,7 +6,6 @@ package.domain = org.maze
 
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,wav
-source.exclude_dirs = bin,.buildozer,__pycache__
 
 version = 1.0.0
 
