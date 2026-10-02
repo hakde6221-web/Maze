@@ -7,16 +7,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: DEBUG - list files in working dir
+      - name: Fix main.py filename
         run: |
-          echo "=== PWD ==="
-          pwd
-          echo "=== ls -la ==="
+          echo "=== Before ==="
           ls -la
-          echo "=== find . -name 'main*' ==="
-          find . -name 'main*' -not -path './.git/*'
-          echo "=== file main.py ==="
-          file main.py || echo "main.py НЕ НАЙДЕН"
+          echo "=== Rename any main* to pure main.py ==="
+          shopt -s nullglob
+          for f in main*; do
+            if [ -f "$f" ] && [ "$f" != "main.py" ]; then
+              echo "Renaming [$f] -> main.py"
+              mv -- "$f" main.py
+            fi
+          done
+          # Если имя уже "main.py", но с невидимым символом - тоже сработает
+          # Потому что цикл берёт ЛЮБОЙ main*, а после первого mv имя станет чистым
+          if [ ! -f "main.py" ]; then
+            for f in *main*; do
+              if [ -f "$f" ]; then
+                echo "Fallback rename [$f] -> main.py"
+                mv -- "$f" main.py
+                break
+              fi
+            done
+          fi
+          echo "=== After ==="
+          ls -la main.py
+          file main.py
+          echo "=== Первая строка main.py ==="
+          head -1 main.py
 
       - uses: actions/setup-python@v5
         with:
