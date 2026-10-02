@@ -6,18 +6,16 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: kivy/buildozer:latest
-      options: --user root
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fix ownership
-        run: |
-          chown -R root:root .
-
       - name: Build APK
+        env:
+          PIP_NO_CACHE_DIR: 1
+          BUILDOZER_WARN_ON_ROOT: 0
         run: |
-          yes | buildozer -v android debug
+          buildozer -v android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
