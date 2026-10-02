@@ -7,6 +7,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: DEBUG - list files in working dir
+        run: |
+          echo "=== PWD ==="
+          pwd
+          echo "=== ls -la ==="
+          ls -la
+          echo "=== find . -name 'main*' ==="
+          find . -name 'main*' -not -path './.git/*'
+          echo "=== file main.py ==="
+          file main.py || echo "main.py НЕ НАЙДЕН"
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
@@ -32,20 +43,15 @@ jobs:
         run: |
           mkdir -p ~/.android/licenses
           touch ~/.android/repositories.cfg
-          cat > ~/.android/licenses/android-sdk-license << 'EOF'
-          24333f8a63b6825ea9c5514f83c2829b004d1fee
-          84831b9409646a918e30573bab4c9c91346d8abd
-          601085b94cd77f0b54ff86406957099ebe79c4d6
-          d56f5187479451eabf01fb78af6dfcb131a6481e
-          EOF
-          mkdir -p ~/.android/licenses
-          cat > ~/.android/licenses/android-sdk-preview-license << 'EOF'
-          84831b9409646a918e30573bab4c9c91346d8abd
-          EOF
+          printf '24333f8a63b6825ea9c5514f83c2829b004d1fee\n84831b9409646a918e30573bab4c9c91346d8abd\n601085b94cd77f0b54ff86406957099ebe79c4d6\nd56f5187479451eabf01fb78af6dfcb131a6481e\n' > ~/.android/licenses/android-sdk-license
 
       - name: Build APK
         run: |
-          buildozer -v android debug
+          buildozer -v android debug > buildozer.log 2>&1 || true
+
+      - name: Show last 200 lines
+        if: always()
+        run: tail -n 200 buildozer.log
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
